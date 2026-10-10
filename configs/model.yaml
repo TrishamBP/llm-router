@@ -1,0 +1,8 @@
+# Model configuration.
+# Future purpose: architecture settings for the XGBoost router, the neural router,
+# the per-model utility predictor, and the fusion layer.
+
+xgboost: {}
+neural: {}
+utility_predictor: {}
+fusion: {}

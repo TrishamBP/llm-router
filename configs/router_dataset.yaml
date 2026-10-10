@@ -1,0 +1,41 @@
+# Second routing dataset: DevQuasar/llm_router_dataset-synth (binary small_llm / large_llm).
+# Parsed by llm_router.data.router_dataset.load_router_config. Paths relative to repo root.
+# Secrets are NOT configured here: FIREWORKS_* variables come from .env.
+
+dataset:
+  repo_id: DevQuasar/llm_router_dataset-synth
+  revision: cd0aa4a0ee35c7c3a31e061e9ad240c732e7cdda  # pinned; checked 2026-10-10
+  data_files:  # official splits; there is no official validation split
+    train: train.jsonl
+    test: test.jsonl
+  card_file: README.md  # declares the class-label names (0: small_llm, 1: large_llm)
+  id_field: id  # not a feature; groups related prompts (one ID = one generation batch)
+  text_field: prompt
+  label_field: label  # stored as integers in the raw JSONL
+  license: apache-2.0
+
+preparation:
+  version: "1"
+  split_ratios: {train: 0.8, validation: 0.1, test: 0.1}
+  seed: 42
+  group_by_source_id: true  # prompts sharing an ID never cross splits
+  duplicate_policy: keep_first  # identical normalised prompts with one label -> one row
+  conflict_policy: drop  # identical normalised prompts with different labels -> removed, reported
+
+embeddings:  # same client settings as configs/complexity.yaml
+  batch_size: 64
+  requests_per_minute: 60
+  timeout_s: 60
+  max_attempts: 6
+  initial_backoff_s: 1.0
+  max_backoff_s: 60.0
+  dimensions: null
+  # fireworks/qwen3-embedding-8b serverless: $0.10 per 1M input tokens
+  # (https://fireworks.ai/pricing, checked 2026-10-10). Update if you change the model.
+  price_per_million_tokens: 0.10
+
+paths:
+  raw_dir: data/raw/llm_router_dataset-synth
+  processed_dir: data/processed/router_dataset
+  embeddings_dir: artifacts/embeddings/router_dataset
+  reports_dir: artifacts/reports

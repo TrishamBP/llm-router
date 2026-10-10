@@ -1,0 +1,10 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "llm-complexity-router",
+  "version": "0.1.0",
+  "description": "Classifies each prompt as easy / medium / hard (Fireworks embeddings + a local NumPy classifier) and suggests a Claude tier; adds a classify_prompt MCP tool and haiku/sonnet/opus worker subagents.",
+  "author": { "name": "Trisham97" },
+  "homepage": "https://huggingface.co/Trisham97/llm-complexity-router",
+  "license": "CC-BY-NC-4.0",
+  "keywords": ["routing", "complexity", "classifier", "fireworks"]
+}

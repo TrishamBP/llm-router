@@ -1,0 +1,16 @@
+# Evaluation configuration.
+# Future purpose: benchmark datasets, metrics (quality, cost, latency, oracle gap),
+# baseline routers to compare against, and report output location.
+
+benchmarks: []
+metrics:
+  - quality
+  - cost
+  - latency
+  - oracle_gap
+baselines:
+  - fixed_model  # one baseline per evaluated registry candidate (each model version separately)
+  - rule_based
+  - random
+  - oracle  # best measured eligible candidate per query (upper bound; regret reference)
+reports_dir: artifacts/reports

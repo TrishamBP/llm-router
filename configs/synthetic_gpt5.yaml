@@ -1,0 +1,25 @@
+# Synthetic complexity prompts written AND labelled by OpenAI GPT-5 (Batch API).
+# Parsed by llm_router.data.synthetic_gpt5. Credentials: OPENAI_API_KEY in .env (never here).
+
+model: gpt-5
+reasoning_effort: minimal  # reasoning tokens are billed as output tokens
+prompts_per_request: 20
+max_output_tokens: 1500  # hard per-request ceiling (~3x the pilot's 465) -> known worst case
+labels: [easy, medium, hard]  # balanced: requests rotate through labels equally
+per_label:  # batch 0: 20 prompts / 1500 tokens truncated 17/47 hard and 8/47 medium requests
+  easy: {prompts: 20, max_output_tokens: 1500}  # batch 0: median 507, max 1152 tokens
+  medium: {prompts: 12, max_output_tokens: 1300}  # batch 0: ~43 tokens per prompt
+  hard: {prompts: 10, max_output_tokens: 1200}  # batch 0: ~68 tokens per prompt
+seed: 42
+
+budget:
+  total_usd: 1.10  # hard cap for ALL spend here (account balance 1.29; ~0.19 kept in reserve)
+
+# https://developers.openai.com/api/docs/pricing (checked 2026-10-10), USD per 1M tokens.
+prices:
+  standard: {input: 1.25, cached_input: 0.125, output: 10.00}  # used by the 1-request pilot
+  batch: {input: 0.625, cached_input: 0.0625, output: 5.00}  # Batch API: 50% of standard
+
+paths:
+  work_dir: data/raw/synthetic_gpt5  # requests, batch outputs, state (git-ignored)
+  output: data/processed/synthetic_gpt5/items.jsonl

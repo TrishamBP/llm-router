@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run --quiet --script \"${CLAUDE_PLUGIN_ROOT}/complexity_router.py\" hook",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

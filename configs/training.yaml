@@ -1,0 +1,12 @@
+# Training configuration.
+# Future purpose: optimisation settings, seeds, device selection (CPU locally,
+# GPU on Lightning AI), checkpointing, and experiment tracking.
+
+seed: 42
+device: cpu
+checkpoints_dir: artifacts/checkpoints
+tracking:
+  backend: mlflow
+neural: {}
+xgboost: {}
+fusion: {}

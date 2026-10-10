@@ -1,0 +1,9 @@
+# Feature configuration.
+# Future purpose: which hand-crafted text features, structured query metadata, and
+# sentence-embedding model are used to represent a query.
+
+text_features: []        # e.g. length, structure, domain indicators (to be specified)
+structured_features: []  # e.g. task type, conversation metadata (to be specified)
+embeddings:
+  model_name: null       # sentence-transformers model (to be selected)
+  cache_dir: data/embeddings

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "llm-complexity-router": {
+      "command": "uv",
+      "args": ["run", "--quiet", "--script", "${CLAUDE_PLUGIN_ROOT}/mcp_server.py"],
+      "env": { "FIREWORKS_API_KEY": "${FIREWORKS_API_KEY}" }
+    }
+  }
+}

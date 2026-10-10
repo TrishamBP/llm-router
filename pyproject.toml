@@ -1,0 +1,99 @@
+[project]
+name = "llm-router"
+version = "0.1.0"
+description = "Hybrid XGBoost + neural network router for selecting between Claude model versions."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = { text = "MIT" }
+authors = [{ name = "LLM Router Research" }]
+# Core: data handling, tabular modelling, configuration, and structured logging.
+dependencies = [
+    "numpy>=1.26,<3",
+    "pandas>=2.2,<3",
+    "scikit-learn>=1.5,<2",
+    "xgboost>=2.1,<4",
+    "pyyaml>=6.0,<7",
+    "pydantic>=2.7,<3",
+    "structlog>=24.1",
+]
+
+[dependency-groups]
+# Neural router and query embeddings. CPU wheels by default; GPU builds are
+# configured separately for the Lightning AI environment.
+neural = [
+    "torch>=2.4,<3",
+    "sentence-transformers>=3.0,<6",
+]
+serving = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+]
+experiments = [
+    "mlflow>=2.16,<4",
+    "python-dotenv>=1.0,<2",
+    "tqdm>=4.66,<5",
+]
+dev = [
+    "pytest>=8.3,<9",
+    "ruff>=0.6",
+    "mypy>=1.11,<2",
+    "types-pyyaml>=6.0",
+]
+complexity = [
+    "datasets>=3,<5",
+    "matplotlib>=3.8,<4",
+    "openai>=1.40,<3",
+    "psutil>=5.9,<8",
+    "python-dotenv>=1.0,<2",
+    "torch>=2.4,<3",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+# PyPI's Windows torch wheels are CPU-only; on Windows use PyTorch's CUDA 13.0 build
+# (needs an NVIDIA driver supporting CUDA >= 13.0). Linux keeps PyPI torch, which bundles CUDA.
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32'" }]
+
+[build-system]
+requires = ["uv_build>=0.9.0,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "llm_router"
+module-root = "src"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+extend-exclude = ["artifacts"]  # generated build output (e.g. the Hugging Face package)
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "N"]
+ignore = ["N806", "N803"]  # allow scikit-learn style matrix names such as X
+
+[tool.ruff.lint.per-file-ignores]
+# imports must follow the sys.path insert so the bundled runtime is found
+"packaging/hub/mcp_server.py" = ["E402", "I001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["llm_router"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+packages = ["llm_router"]
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"

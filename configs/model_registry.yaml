@@ -1,0 +1,455 @@
+# Model registry: the single source of candidate model versions for the router.
+#
+# Each record is one routable destination: one model version on one provider.
+# Schema and procedures: docs/model_registry.md. Validated by llm_router.models.registry.
+#
+# Rules:
+# - `null` means unknown. Unknown prices are never zero; unknown capabilities are never supported.
+# - `enabled: true` is a project opt-in, not proof of availability. Candidates must also pass
+#   llm_router.routing.candidate_filter for each request.
+# - Every non-null price, provider ID, and non-"unverified" lifecycle status needs a source.
+# - Benchmark fields are filled only from a reviewed evaluation run (see docs/model_registry.md).
+#
+# All Anthropic values below were checked against Anthropic's documentation on 2026-10-10.
+
+schema_version: 1
+
+_sources:  # anchors only; ignored by the loader
+  overview: &src_overview
+    url: https://platform.claude.com/docs/en/models/overview
+    checked_at: 2026-10-10
+  pricing: &src_pricing
+    url: https://platform.claude.com/docs/en/about-claude/pricing
+    checked_at: 2026-10-10
+    note: "Claude API first-party prices; global routing; excludes batch discount and inference_geo multiplier"
+  deprecations: &src_deprecations
+    url: https://platform.claude.com/docs/en/about-claude/model-deprecations
+    checked_at: 2026-10-10
+  parameter_deprecations: &src_param_deprecations
+    url: https://platform.claude.com/docs/en/about-claude/model-deprecations#api-parameter-deprecations
+    checked_at: 2026-10-10
+    note: "temperature/top_p/top_k return 400 when set to non-default values on Claude 4.7 and later"
+
+_parameters:  # anchors only; true = may be set to a non-default value
+  claude_4_7_and_later: &params_4_7_plus
+    temperature: false
+    top_p: false
+    top_k: false
+    effort: true
+    thinking_adaptive: true
+    thinking_budget_tokens: false
+
+models:
+  # ---------------------------------------------------------------- Anthropic (Claude API)
+  - model_id: anthropic/claude-haiku-4-5
+    display_name: Claude Haiku 4.5
+    provider: anthropic
+    family: haiku
+    version: "4.5"
+    lifecycle:
+      status: legacy
+      enabled: true
+      verified_at: 2026-10-10
+      retirement_not_before: 2026-10-15
+      sources:
+        - *src_deprecations
+        - url: https://platform.claude.com/docs/en/models/haiku-4-5/overview
+          checked_at: 2026-10-10
+    capabilities:
+      context_window_tokens: 200000
+      max_output_tokens: 64000
+      supports_tools: null  # not stated on the model page; confirm via Models API
+      supports_vision: true  # "Text and images -> text"
+      supports_structured_output: null
+      parameters:
+        temperature: true  # parameter deprecation applies to 4.7 and later only
+        top_p: true
+        top_k: true
+        effort: false  # "Default effort: Not supported"
+        thinking_adaptive: false
+        thinking_budget_tokens: true  # manual extended thinking
+      verified_at: 2026-10-10
+      sources:
+        - url: https://platform.claude.com/docs/en/models/haiku-4-5/overview
+          checked_at: 2026-10-10
+        - *src_param_deprecations
+    pricing:
+      input: 1.00
+      output: 5.00
+      cache_read: 0.10
+      cache_write_5m: 1.25
+      cache_write_1h: 2.00
+      verified_at: 2026-10-10
+      sources: [*src_pricing]
+    provider_metadata:
+      api_model_id: claude-haiku-4-5-20251001  # pinned snapshot
+      api_model_alias: claude-haiku-4-5
+      sources:
+        - url: https://platform.claude.com/docs/en/models/haiku-4-5/overview
+          checked_at: 2026-10-10
+    notes: "Retirement not sooner than 2026-10-15; re-check lifecycle before each experiment."
+
+  - model_id: anthropic/claude-haiku-5-5
+    display_name: Claude Haiku 5.5
+    provider: anthropic
+    family: haiku
+    version: "5.5"
+    lifecycle:
+      status: active
+      enabled: true
+      verified_at: 2026-10-10
+      retirement_not_before: 2027-10-07
+      sources: [*src_overview, *src_deprecations]
+    capabilities:
+      context_window_tokens: 1000000
+      max_output_tokens: 128000
+      supports_tools: true  # "All current models support ... vision, and tool use"
+      supports_vision: true
+      supports_structured_output: null
+      parameters: *params_4_7_plus
+      verified_at: 2026-10-10
+      sources: [*src_overview, *src_param_deprecations]
+    pricing:
+      input: 0.10
+      output: 0.50
+      cache_read: 0.01
+      cache_write_5m: 0.125
+      cache_write_1h: 0.20
+      tiers:
+        - name: prompt_over_100k
+          applies_when_prompt_tokens_over: 100000
+          input: 0.50
+          output: 2.50
+          cache_read: 0.05
+          cache_write_5m: 0.625
+          cache_write_1h: 1.00
+      verified_at: 2026-10-10
+      sources:
+        - *src_pricing
+        - url: https://platform.claude.com/docs/en/about-claude/pricing#long-context-pricing
+          checked_at: 2026-10-10
+          note: "Prompt length counts all input tokens incl. cache reads/writes; whole request repriced"
+    provider_metadata:
+      api_model_id: claude-haiku-5-5
+      sources: [*src_overview]
+
+  - model_id: anthropic/claude-sonnet-5
+    display_name: Claude Sonnet 5
+    provider: anthropic
+    family: sonnet
+    version: "5"
+    lifecycle:
+      status: legacy
+      enabled: true
+      verified_at: 2026-10-10
+      retirement_not_before: 2027-06-30
+      sources:
+        - *src_deprecations
+        - url: https://platform.claude.com/docs/en/models/sonnet-5/overview
+          checked_at: 2026-10-10
+    capabilities:
+      context_window_tokens: 1000000
+      max_output_tokens: 128000
+      supports_tools: null  # not stated on the model page; confirm via Models API
+      supports_vision: true
+      supports_structured_output: null
+      parameters: *params_4_7_plus
+      verified_at: 2026-10-10
+      sources:
+        - url: https://platform.claude.com/docs/en/models/sonnet-5/overview
+          checked_at: 2026-10-10
+        - *src_param_deprecations
+    pricing:
+      input: 2.00
+      output: 10.00
+      cache_read: 0.20
+      cache_write_5m: 2.50
+      cache_write_1h: 4.00
+      verified_at: 2026-10-10
+      sources: [*src_pricing]
+    provider_metadata:
+      api_model_id: claude-sonnet-5
+      sources:
+        - url: https://platform.claude.com/docs/en/models/sonnet-5/overview
+          checked_at: 2026-10-10
+
+  - model_id: anthropic/claude-sonnet-5-5
+    display_name: Claude Sonnet 5.5
+    provider: anthropic
+    family: sonnet
+    version: "5.5"
+    lifecycle:
+      status: active
+      enabled: true
+      verified_at: 2026-10-10
+      retirement_not_before: 2027-09-28
+      sources: [*src_overview, *src_deprecations]
+    capabilities:
+      context_window_tokens: 1000000
+      max_output_tokens: 128000
+      supports_tools: true
+      supports_vision: true
+      supports_structured_output: null
+      parameters: *params_4_7_plus
+      verified_at: 2026-10-10
+      sources: [*src_overview, *src_param_deprecations]
+    pricing:
+      input: 2.00
+      output: 10.00
+      cache_read: 0.10
+      cache_write_5m: 2.50
+      cache_write_1h: 4.00
+      verified_at: 2026-10-10
+      sources: [*src_pricing]
+    provider_metadata:
+      api_model_id: claude-sonnet-5-5
+      sources: [*src_overview]
+
+  - model_id: anthropic/claude-opus-4-7
+    display_name: Claude Opus 4.7
+    provider: anthropic
+    family: opus
+    version: "4.7"
+    lifecycle:
+      status: legacy
+      enabled: true
+      verified_at: 2026-10-10
+      retirement_not_before: 2027-04-16
+      sources:
+        - *src_deprecations
+        - url: https://platform.claude.com/docs/en/models/opus-4-7/overview
+          checked_at: 2026-10-10
+    capabilities:
+      context_window_tokens: 1000000
+      max_output_tokens: 128000
+      supports_tools: null  # not stated on the model page; confirm via Models API
+      supports_vision: true
+      supports_structured_output: null
+      parameters: *params_4_7_plus
+      verified_at: 2026-10-10
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-4-7/overview
+          checked_at: 2026-10-10
+        - *src_param_deprecations
+    pricing:
+      input: 5.00
+      output: 25.00
+      cache_read: 0.50
+      cache_write_5m: 6.25
+      cache_write_1h: 10.00
+      verified_at: 2026-10-10
+      sources: [*src_pricing]
+    provider_metadata:
+      api_model_id: claude-opus-4-7
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-4-7/overview
+          checked_at: 2026-10-10
+
+  - model_id: anthropic/claude-opus-4-8
+    display_name: Claude Opus 4.8
+    provider: anthropic
+    family: opus
+    version: "4.8"
+    lifecycle:
+      status: legacy
+      enabled: true
+      verified_at: 2026-10-10
+      retirement_not_before: 2027-05-28
+      sources:
+        - *src_deprecations
+        - url: https://platform.claude.com/docs/en/models/opus-4-8/overview
+          checked_at: 2026-10-10
+    capabilities:
+      context_window_tokens: 1000000
+      max_output_tokens: 128000
+      supports_tools: null  # not stated on the model page; confirm via Models API
+      supports_vision: true
+      supports_structured_output: null
+      parameters: *params_4_7_plus
+      verified_at: 2026-10-10
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-4-8/overview
+          checked_at: 2026-10-10
+        - *src_param_deprecations
+    pricing:
+      input: 5.00
+      output: 25.00
+      cache_read: 0.50
+      cache_write_5m: 6.25
+      cache_write_1h: 10.00
+      verified_at: 2026-10-10
+      sources: [*src_pricing]
+    provider_metadata:
+      api_model_id: claude-opus-4-8
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-4-8/overview
+          checked_at: 2026-10-10
+
+  - model_id: anthropic/claude-opus-5
+    display_name: Claude Opus 5
+    provider: anthropic
+    family: opus
+    version: "5"
+    lifecycle:
+      status: legacy
+      enabled: true
+      verified_at: 2026-10-10
+      retirement_not_before: 2027-07-24
+      sources:
+        - *src_deprecations
+        - url: https://platform.claude.com/docs/en/models/opus-5/overview
+          checked_at: 2026-10-10
+    capabilities:
+      context_window_tokens: 1000000
+      max_output_tokens: 128000
+      supports_tools: null  # not stated on the model page; confirm via Models API
+      supports_vision: true
+      supports_structured_output: null
+      parameters: *params_4_7_plus
+      verified_at: 2026-10-10
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-5/overview
+          checked_at: 2026-10-10
+        - *src_param_deprecations
+    pricing:
+      input: 5.00
+      output: 25.00
+      cache_read: 0.50
+      cache_write_5m: 6.25
+      cache_write_1h: 10.00
+      verified_at: 2026-10-10
+      sources: [*src_pricing]
+    provider_metadata:
+      api_model_id: claude-opus-5
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-5/overview
+          checked_at: 2026-10-10
+
+  - model_id: anthropic/claude-opus-5-5
+    display_name: Claude Opus 5.5
+    provider: anthropic
+    family: opus
+    version: "5.5"
+    lifecycle:
+      status: active
+      enabled: true
+      verified_at: 2026-10-10
+      retirement_not_before: 2027-09-22
+      sources: [*src_overview, *src_deprecations]
+    capabilities:
+      context_window_tokens: 1000000
+      max_output_tokens: 128000
+      supports_tools: true
+      supports_vision: true
+      supports_structured_output: null
+      parameters: *params_4_7_plus
+      verified_at: 2026-10-10
+      sources: [*src_overview, *src_param_deprecations]
+    pricing:
+      input: 4.00
+      output: 20.00
+      cache_read: 0.20
+      cache_write_5m: 5.00
+      cache_write_1h: 8.00
+      verified_at: 2026-10-10
+      sources: [*src_pricing]
+    provider_metadata:
+      api_model_id: claude-opus-5-5
+      sources: [*src_overview]
+
+  # ---------------------------------------------------------------- Amazon Bedrock
+  # Model IDs are listed in Anthropic's docs. Bedrock pricing, lifecycle, and regions are set by
+  # AWS and have NOT been verified, so these candidates stay unverified and disabled.
+  - model_id: amazon-bedrock/claude-haiku-4-5
+    display_name: Claude Haiku 4.5 (Amazon Bedrock)
+    provider: amazon-bedrock
+    family: haiku
+    version: "4.5"
+    provider_metadata:
+      api_model_id: anthropic.claude-haiku-4-5
+      sources:
+        - url: https://platform.claude.com/docs/en/models/haiku-4-5/overview
+          checked_at: 2026-10-10
+          note: "Bedrock Messages-API endpoint ID; InvokeModel ID is anthropic.claude-haiku-4-5-20251001-v1:0"
+
+  - model_id: amazon-bedrock/claude-haiku-5-5
+    display_name: Claude Haiku 5.5 (Amazon Bedrock)
+    provider: amazon-bedrock
+    family: haiku
+    version: "5.5"
+    provider_metadata:
+      api_model_id: anthropic.claude-haiku-5-5
+      sources: [*src_overview]
+
+  - model_id: amazon-bedrock/claude-sonnet-5
+    display_name: Claude Sonnet 5 (Amazon Bedrock)
+    provider: amazon-bedrock
+    family: sonnet
+    version: "5"
+    provider_metadata:
+      api_model_id: anthropic.claude-sonnet-5
+      sources:
+        - url: https://platform.claude.com/docs/en/models/sonnet-5/overview
+          checked_at: 2026-10-10
+
+  - model_id: amazon-bedrock/claude-sonnet-5-5
+    display_name: Claude Sonnet 5.5 (Amazon Bedrock)
+    provider: amazon-bedrock
+    family: sonnet
+    version: "5.5"
+    provider_metadata:
+      api_model_id: anthropic.claude-sonnet-5-5
+      sources: [*src_overview]
+
+  - model_id: amazon-bedrock/claude-opus-4-7
+    display_name: Claude Opus 4.7 (Amazon Bedrock)
+    provider: amazon-bedrock
+    family: opus
+    version: "4.7"
+    provider_metadata:
+      api_model_id: anthropic.claude-opus-4-7
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-4-7/overview
+          checked_at: 2026-10-10
+
+  - model_id: amazon-bedrock/claude-opus-4-8
+    display_name: Claude Opus 4.8 (Amazon Bedrock)
+    provider: amazon-bedrock
+    family: opus
+    version: "4.8"
+    provider_metadata:
+      api_model_id: anthropic.claude-opus-4-8
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-4-8/overview
+          checked_at: 2026-10-10
+
+  - model_id: amazon-bedrock/claude-opus-5
+    display_name: Claude Opus 5 (Amazon Bedrock)
+    provider: amazon-bedrock
+    family: opus
+    version: "5"
+    provider_metadata:
+      api_model_id: anthropic.claude-opus-5
+      sources:
+        - url: https://platform.claude.com/docs/en/models/opus-5/overview
+          checked_at: 2026-10-10
+
+  - model_id: amazon-bedrock/claude-opus-5-5
+    display_name: Claude Opus 5.5 (Amazon Bedrock)
+    provider: amazon-bedrock
+    family: opus
+    version: "5.5"
+    provider_metadata:
+      api_model_id: anthropic.claude-opus-5-5
+      sources: [*src_overview]
+
+# Requested versions that could not be verified. Never routable; kept for traceability.
+pending_candidates:
+  - requested_label: Claude Opus 4.9
+    family: opus
+    version: "4.9"
+    reason: >-
+      Not listed in Anthropic's models overview, pricing, or model-deprecations pages, which list
+      Opus 4.5, 4.6, 4.7, 4.8, 5 and 5.5. No provider model ID or price exists to record.
+    checked_at: 2026-10-10
+    sources: [*src_overview, *src_pricing, *src_deprecations]

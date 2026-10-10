@@ -1,0 +1,16 @@
+# Data configuration.
+# Future purpose: locations of raw/interim/processed datasets, the candidate model set,
+# schema versions for query and per-model outcome records, and split definitions.
+
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+  embeddings: data/embeddings
+  evaluation: data/evaluation
+
+# Candidate model versions are defined in the model registry, not here. Outcome records
+# reference candidates by canonical model_id (see llm_router.schemas.OutcomeRecord).
+model_registry: configs/model_registry.yaml
+
+splits: {}  # train / validation / test definitions (to be specified)

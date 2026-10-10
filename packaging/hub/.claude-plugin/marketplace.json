@@ -1,0 +1,6 @@
+{
+  "name": "llm-complexity-router",
+  "owner": { "name": "Trisham97" },
+  "description": "Prompt-complexity router for Claude Code: easy / medium / hard classification with a suggested Claude tier.",
+  "plugins": [{ "name": "llm-complexity-router", "source": "./" }]
+}

@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="340" viewBox="0 0 900 340" role="img" aria-labelledby="title desc">
+  <title id="title">LLM Router animation</title>
+  <desc id="desc">Prompts are embedded, classified as easy, medium, or hard, and routed to Claude Haiku, Sonnet, or Opus.</desc>
+  <defs>
+    <style>
+      .sans { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; }
+      .lane { fill: none; stroke: #30363d; stroke-width: 2; stroke-dasharray: 6 6; animation: flow 1.2s linear infinite; }
+      @keyframes flow { to { stroke-dashoffset: -24; } }
+      .pulse { animation: pulse 2s ease-in-out infinite; transform-origin: 450px 180px; }
+      @keyframes pulse { 0%, 100% { opacity: .25; transform: scale(1); } 50% { opacity: .7; transform: scale(1.04); } }
+    </style>
+    <linearGradient id="routerFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1f6feb"/>
+      <stop offset="1" stop-color="#8957e5"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <path id="r0" d="M200 180 L535 180 C610 180 620 90 700 90"/>
+    <path id="r1" d="M200 180 L700 180"/>
+    <path id="r2" d="M200 180 L535 180 C610 180 620 270 700 270"/>
+  </defs>
+
+  <rect x="1" y="1" width="898" height="338" rx="16" fill="#0d1117" stroke="#30363d"/>
+
+  <!-- lanes -->
+  <line x1="200" y1="180" x2="365" y2="180" class="lane"/>
+  <path d="M535 180 C610 180 620 90 700 90" class="lane"/>
+  <path d="M535 180 L700 180" class="lane"/>
+  <path d="M535 180 C610 180 620 270 700 270" class="lane"/>
+  <text x="282" y="168" text-anchor="middle" class="sans" font-size="11" fill="#8b949e">Qwen3-Embedding-8B</text>
+  <text x="282" y="200" text-anchor="middle" class="mono" font-size="11" fill="#8b949e">4096-d</text>
+
+  <!-- incoming prompt -->
+  <rect x="30" y="130" width="170" height="100" rx="12" fill="#161b22" stroke="#30363d"/>
+  <text x="115" y="152" text-anchor="middle" class="sans" font-size="11" fill="#8b949e">INCOMING PROMPT</text>
+  <g class="sans" font-size="13" fill="#e6edf3" text-anchor="middle">
+    <text x="115" y="188">"What is 2 + 2?"
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="1;1;0;0" keyTimes="0;0.32;0.333;1"/>
+    </text>
+    <text x="115" y="188" opacity="0">"Refactor this module"
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.333;0.343;0.657;0.667;1"/>
+    </text>
+    <g opacity="0">
+      <text x="115" y="180">"Design a lock-free</text>
+      <text x="115" y="198">queue and prove it"</text>
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1" keyTimes="0;0.667;0.677;1"/>
+    </g>
+  </g>
+
+  <!-- packets (drawn under the router so they pass through it) -->
+  <circle r="7" fill="#3fb950" filter="url(#glow)" opacity="0">
+    <animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.033;0.25;1"><mpath href="#r0"/></animateMotion>
+    <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.03;0.04;0.25;0.26;1"/>
+  </circle>
+  <circle r="7" fill="#d29922" filter="url(#glow)" opacity="0">
+    <animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.367;0.583;1"><mpath href="#r1"/></animateMotion>
+    <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.363;0.373;0.583;0.593;1"/>
+  </circle>
+  <circle r="7" fill="#f85149" filter="url(#glow)" opacity="0">
+    <animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.7;0.917;1"><mpath href="#r2"/></animateMotion>
+    <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.697;0.707;0.917;0.927;1"/>
+  </circle>
+
+  <!-- router -->
+  <rect x="357" y="117" width="186" height="126" rx="18" fill="none" stroke="#8957e5" stroke-width="3" class="pulse"/>
+  <rect x="365" y="125" width="170" height="110" rx="14" fill="url(#routerFill)"/>
+  <text x="450" y="157" text-anchor="middle" class="sans" font-size="17" font-weight="700" fill="#ffffff">Hybrid Router</text>
+  <text x="450" y="177" text-anchor="middle" class="sans" font-size="11" fill="#e6edf3">MLP · XGBoost · fusion</text>
+  <g class="mono" font-size="13" font-weight="700" text-anchor="middle">
+    <text x="450" y="210" fill="#aff5b4" opacity="0">complexity: EASY
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.09;0.1;0.32;0.333;1"/>
+    </text>
+    <text x="450" y="210" fill="#f8e3a1" opacity="0">complexity: MEDIUM
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.423;0.433;0.657;0.667;1"/>
+    </text>
+    <text x="450" y="210" fill="#ffc1bc" opacity="0">complexity: HARD
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.757;0.767;0.99;1;1"/>
+    </text>
+  </g>
+
+  <!-- models -->
+  <g class="sans">
+    <rect x="700" y="58" width="175" height="64" rx="12" fill="#161b22" stroke="#30363d"/>
+    <rect x="700" y="58" width="175" height="64" rx="12" fill="none" stroke="#3fb950" stroke-width="2.5" opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.24;0.25;0.32;0.333;1"/>
+    </rect>
+    <text x="716" y="82" font-size="14" font-weight="700" fill="#e6edf3">Claude Haiku</text>
+    <text x="716" y="99" class="mono" font-size="11" fill="#8b949e">claude-haiku-5-5</text>
+    <text x="716" y="114" font-size="10" fill="#3fb950">$0.10 / $0.50 per MTok</text>
+
+    <rect x="700" y="148" width="175" height="64" rx="12" fill="#161b22" stroke="#30363d"/>
+    <rect x="700" y="148" width="175" height="64" rx="12" fill="none" stroke="#d29922" stroke-width="2.5" opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.573;0.583;0.657;0.667;1"/>
+    </rect>
+    <text x="716" y="172" font-size="14" font-weight="700" fill="#e6edf3">Claude Sonnet</text>
+    <text x="716" y="189" class="mono" font-size="11" fill="#8b949e">claude-sonnet-5-5</text>
+    <text x="716" y="204" font-size="10" fill="#d29922">$2 / $10 per MTok</text>
+
+    <rect x="700" y="238" width="175" height="64" rx="12" fill="#161b22" stroke="#30363d"/>
+    <rect x="700" y="238" width="175" height="64" rx="12" fill="none" stroke="#f85149" stroke-width="2.5" opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;0.907;0.917;0.99;1"/>
+    </rect>
+    <text x="716" y="262" font-size="14" font-weight="700" fill="#e6edf3">Claude Opus</text>
+    <text x="716" y="279" class="mono" font-size="11" fill="#8b949e">claude-opus-5-5</text>
+    <text x="716" y="294" font-size="10" fill="#f85149">$4 / $20 per MTok</text>
+  </g>
+
+  <text x="450" y="322" text-anchor="middle" class="sans" font-size="12" fill="#8b949e">embed → classify → pick the cheapest model that meets the quality and latency constraints</text>
+</svg>

@@ -1,0 +1,90 @@
+# Complexity classifier pipeline (easy / medium / hard) on Fireworks embeddings.
+# Parsed by llm_router.config.load_config. Paths are relative to the repository root.
+# Secrets are NOT configured here: FIREWORKS_API_KEY / FIREWORKS_EMBEDDING_MODEL come from .env.
+
+dataset:
+  repo_id: regolo/brick-complexity-extractor
+  revision: ff9697c2bf7700e24a82833d3f61d41af78d2867  # pinned; checked 2026-10-10
+  # The dataset card's `configs` section points at train.jsonl/val.jsonl/test.jsonl, which do
+  # not exist in the repository, so the actual files are listed explicitly.
+  data_files:
+    train: data/train_final.jsonl
+    validation: data/val_final.jsonl
+    test: data/test_final.jsonl
+  text_field: text  # the card documents `query`; the files actually contain `text`
+  label_field: label
+  confidence_field: confidence  # documented on the card but absent from the files
+  license: cc-by-nc-4.0
+
+preprocessing:
+  version: "1"
+  duplicate_policy: keep_first  # identical (normalised) queries with the same label -> one row
+  conflict_policy: drop  # identical (normalised) queries with different labels -> removed
+  min_confidence: null  # disabled by default; evaluate as a separate experiment
+  split_ratios: {train: 0.8, validation: 0.1, test: 0.1}  # official 85/10/5 splits are re-split
+  seed: 20261010
+
+embeddings:
+  batch_size: 64
+  requests_per_minute: 60  # conservative client-side limit
+  timeout_s: 60
+  max_attempts: 6  # per batch, for 429 / timeouts / 5xx only
+  initial_backoff_s: 1.0
+  max_backoff_s: 60.0
+  dimensions: null  # only set if the chosen model documents a `dimensions` parameter
+  # fireworks/qwen3-embedding-8b serverless: $0.10 per 1M input tokens
+  # (https://fireworks.ai/pricing, checked 2026-10-10). Update if you change the model.
+  price_per_million_tokens: 0.10
+
+training:
+  seed: 20261010
+  logreg_c: [0.01, 0.1, 1.0, 10.0]
+  svm_c: [0.01, 0.1, 1.0]
+  class_weights: [none, balanced]
+  max_iter: 3000
+  selection_metric: macro_f1
+
+# --- XGBoost / MLP complexity classifiers (CPU only; sized for an 8 GB RAM machine) ---
+resources:
+  threads: 2  # one budget for BLAS, OpenMP, XGBoost, and torch (no nested parallelism)
+  device: auto  # XGBoost/MLP: GPU if usable (CUDA build + visible GPU), else CPU; or cpu / cuda
+  seed: 42
+  max_train_seconds: 3600  # per training job; training stops early and keeps the best model
+  memory_budget_gb: 8.0  # training stops if process RSS exceeds this (includes mmap pages)
+  imbalance_threshold: 2.0  # evaluate class_weight=balanced only if max/min class ratio >= this
+
+xgboost:  # native-API equivalent of XGBClassifier(objective="multi:softprob", tree_method="hist")
+  n_estimators: 200
+  max_depth: 4
+  learning_rate: 0.05
+  subsample: 0.8
+  colsample_bytree: 0.7
+  min_child_weight: 1.0
+  reg_lambda: 1.0
+  max_bin: 256
+  early_stopping_rounds: 20  # on validation mlogloss; the test split is never used
+  class_weights: [none, balanced]
+  chunk_rows: 8192
+
+mlp:
+  hidden_dims: [256, 128]
+  dropouts: [0.2, 0.1]
+  learning_rate: 0.001
+  weight_decay: 0.01
+  batch_size: 128
+  eval_batch_size: 2048
+  max_epochs: 30
+  patience: 5  # epochs without validation macro-F1 improvement
+  class_weights: [none, balanced]
+  standardize: true
+
+classifier:  # what ComplexityRouter.from_config() loads
+  type: logistic_regression  # logistic_regression | xgboost | mlp
+  model_dir: null  # default: artifacts/models/<type>
+
+paths:
+  raw_dir: data/raw/brick-complexity-extractor
+  processed_dir: data/processed/brick-complexity
+  embeddings_dir: artifacts/embeddings
+  models_dir: artifacts/models
+  reports_dir: artifacts/reports

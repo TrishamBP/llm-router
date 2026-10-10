@@ -1,0 +1,32 @@
+# Routing policy configuration.
+# Maps predicted per-candidate quality, cost, and latency to one specific model version.
+# Candidates come from configs/model_registry.yaml; nothing here names a family or version.
+# Parsed by llm_router.routing.policy.PolicyConfig.from_mapping (decision) and
+# llm_router.routing.candidate_filter.CandidateRequest.from_config (candidate_filter).
+
+registry: configs/model_registry.yaml
+
+candidate_filter:
+  allowed_statuses: [active, legacy]  # "deprecated" may be added; others can never be routed
+  require_pricing: true  # cost-based policy needs known prices
+  allowed_providers: null  # null: any provider; e.g. [anthropic]
+  allowed_regions: null  # null: no regional restriction
+  allowlist: null  # null: no allowlist; otherwise canonical model IDs
+  denylist: []
+
+decision:
+  objective: min_predicted_cost  # argmin cost s.t. quality >= min_quality, p95 <= max_latency
+  constraints:
+    min_quality: null  # to be set from validation results; null disables the constraint
+    max_latency_p95_ms: null
+  fallback: no_feasible_candidate  # or maximize_utility (requires utility_weights)
+  utility_weights:  # only used by the maximize_utility fallback
+    quality: null
+    cost: null
+    latency_ms: null
+
+calibration: {}
+
+escalation:
+  enabled: false  # not implemented; see llm_router.routing.escalation
+  order: []  # canonical model IDs from the registry, e.g. anthropic/claude-haiku-5-5

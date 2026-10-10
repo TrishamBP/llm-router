@@ -1,0 +1,70 @@
+# Virtual environments
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python caches and tooling
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.coverage
+htmlcov/
+
+# Model checkpoints and weights
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+checkpoints/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Generated datasets (keep directory placeholders)
+data/**
+!data/README.md
+!data/*/
+!data/*/.gitkeep
+
+# Local experiment outputs (keep directory placeholder)
+artifacts/**
+!artifacts/.gitkeep
+outputs/
+lightning_logs/
+
+# Data and model files anywhere in the tree (backstop for the folder rules above)
+*.npy
+*.npz
+*.joblib
+*.ubj
+*.arrow
+*.parquet
+*.pkl
+*.h5
+*.log
+
+# Developer tooling generated state (see docs/developer_tooling.md)
+graphify-out/
+.claude/
+
+# Personal / local-only files
+CLAUDE.md
+project_learnings.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

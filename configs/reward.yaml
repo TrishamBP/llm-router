@@ -1,0 +1,9 @@
+# Reward configuration.
+# Future purpose: how response quality, latency, and inference cost are combined into
+# a scalar reward for preference learning and policy optimisation.
+
+components:
+  quality: {}
+  cost: {}
+  latency: {}
+weights: {}  # trade-off weights (to be determined experimentally)

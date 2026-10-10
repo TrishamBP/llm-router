@@ -1,0 +1,2 @@
+# Keep shell scripts LF so they run on Linux (Lightning AI) regardless of core.autocrlf.
+*.sh text eol=lf
